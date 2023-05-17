@@ -18,12 +18,11 @@ class Level:
             for col_index, cell in enumerate(row):
                 x = col_index * tile_size
                 y = row_index * tile_size
-
                 if cell == 'X':
                     tile = Tile((x, y), tile_size)
                     self.tiles.add(tile)
                 if cell == 'P':
-                    player_sprite = Player((x, y))
+                    player_sprite = Player((x, y), self.display_surface)
                     self.player.add(player_sprite)
 
     def scroll_x(self):
@@ -63,20 +62,18 @@ class Level:
                     player.direction.y = 0
                 elif player.direction.y < 0:
                     player.rect.top = sprite.rect.bottom
-                    player.direction.y = 0
+                    player.direction.y = 0 
 
     def run(self):
         # Level Tiles
         self.tiles.update(self.world_shift)
         self.tiles.draw(self.display_surface)
         self.scroll_x()
-        
-
         #Player
         self.player.update()
         self.horizontal_movement_collision()
-        self.vertical_movement_collision()
         self.player.draw(self.display_surface)
+        self.vertical_movement_collision()
         
         
 
