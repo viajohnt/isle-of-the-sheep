@@ -1,6 +1,7 @@
-import pygame 
+import pygame
 from support import import_folder
 from models import Player, session
+from pygame import Rect
 
 class PlayerSprite(pygame.sprite.Sprite):
 	def __init__(self,pos,surface,create_jump_particles):
@@ -12,6 +13,8 @@ class PlayerSprite(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(topleft = pos)
 		self.font = pygame.font.SysFont(None, 70)
 		self.score = 0
+		self.health = 100
+		self.hit_cooldown = 0
 
 		# dust particles 
 		self.import_dust_run_particles()
@@ -123,9 +126,53 @@ class PlayerSprite(pygame.sprite.Sprite):
 
 	def jump(self):
 		self.direction.y = self.jump_speed
+	
+	def update_health(self, amount):
+		if self.hit_cooldown <= 0:
+			self.health -= amount
+			self.hit_cooldown = 0.5  # Cooldown period of half a second
 
+			if self.health <= 0:
+				self.health = 0
+				# Handle game over logic here if needed
+
+			elif self.health > 100:
+				self.health = 100
+
+	def draw_health_bar(self, surface):
+		bar_width = 100
+		bar_height = 10
+		bar_x = self.rect.centerx - bar_width // 2
+		bar_y = self.rect.y - 20
+
+		health_percentage = self.health / 100
+		health_bar_width = int(bar_width * health_percentage)
+
+		# Draw the background of the health bar
+		bg_rect = Rect(bar_x, bar_y, bar_width, bar_height)
+		pygame.draw.rect(surface, (255, 0, 0), bg_rect)
+
+		# Draw the actual health bar
+		health_rect = Rect(bar_x, bar_y, health_bar_width, bar_height)
+		pygame.draw.rect(surface, (0, 255, 0), health_rect)
+
+	def handle_enemy_collision(self, enemy):
+		enemy_rect = enemy.rect
+
+		if self.rect.colliderect(enemy_rect):
+			if self.rect.bottom <= enemy_rect.top:  # Player jumps on enemy's head
+				self.rect.bottom = enemy_rect.top
+				self.velocity.y = -12  # Adjust the player's vertical velocity to simulate a jump
+				return True  # Return True to indicate successful collision
+
+			self.update_health(20)  # Apply damage
+
+		return False  # Return False for other types of collision
+			
 	def update(self):
 		self.get_input()
 		self.get_state()
 		self.animate()
 		self.run_dust_animation()
+		if self.hit_cooldown > 0:
+			self.hit_cooldown -= 0.01

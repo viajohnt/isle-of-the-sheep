@@ -14,6 +14,7 @@ class Level:
 		self.current_x = None
 		self.username = username
 		self.score = 0
+		
 
 		# player 
 		player_layout = import_csv_layout(level_data['player'])
@@ -247,7 +248,15 @@ class Level:
 		username_font = pygame.font.Font(None, 36)  
 		username_text = username_font.render("User: " + self.username.username, True, (0, 0, 0))
 		self.display_surface.blit(username_text, (20, 60))
-		
+		self.player.sprite.draw_health_bar(self.display_surface)
+
+		player = self.player.sprite
+		player_rect = player.rect
+
+		for enemy in self.enemy_sprites.sprites():
+			if player.handle_enemy_collision(enemy):
+				self.enemy_sprites.remove(enemy) 
+			
 		self.get_player_on_ground()
 		self.vertical_movement_collision()
 		self.create_landing_dust()
