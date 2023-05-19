@@ -1,19 +1,19 @@
 import pygame 
 from support import import_csv_layout, import_cut_graphics
 from settings import tile_size, screen_height, screen_width
-from tiles import Tile, StaticTile, Crate, Coin, Palm
+from tiles import Tile, StaticTile, Coin
 from enemy import Enemy
 from decoration import Sky, Water, Clouds
-from player import Player
+from player import PlayerSprite
 from particles import ParticleEffect
 
 class Level:
 	def __init__(self,level_data,surface, username):
-		# general setup
 		self.display_surface = surface
 		self.world_shift = 0
 		self.current_x = None
 		self.username = username
+		self.score = 0
 
 		# player 
 		player_layout = import_csv_layout(level_data['player'])
@@ -25,11 +25,11 @@ class Level:
 		self.dust_sprite = pygame.sprite.GroupSingle()
 		self.player_on_ground = False
 
-		# terrain setup
+		# terrain 
 		terrain_layout = import_csv_layout(level_data['terrain'])
 		self.terrain_sprites = self.create_tile_group(terrain_layout,'terrain')
 
-		# grass setup 
+		# grass 
 		grass_layout = import_csv_layout(level_data['grass'])
 		self.grass_sprites = self.create_tile_group(grass_layout,'grass')
 
@@ -41,7 +41,7 @@ class Level:
 		coin_layout = import_csv_layout(level_data['coins'])
 		self.coin_sprites = self.create_tile_group(coin_layout,'coins')
 
-		# foreground palms 
+		# trees
 		tree_layout = import_csv_layout(level_data['trees'])
 		self.tree_sprites = self.create_tile_group(tree_layout,'trees')
 
@@ -107,7 +107,7 @@ class Level:
 				x = col_index * tile_size
 				y = row_index * tile_size
 				if val == '0':
-					sprite = Player((x,y),self.display_surface,self.create_jump_particles)
+					sprite = PlayerSprite((x,y),self.display_surface,self.create_jump_particles,)
 					self.player.add(sprite)
 				if val == '1':
 					hat_surface = pygame.image.load('lib/assets/graphics/character/hat.png').convert_alpha()
@@ -232,19 +232,20 @@ class Level:
 		# dust particles 
 		self.dust_sprite.update(self.world_shift)
 		self.dust_sprite.draw(self.display_surface)
+		score1 = self.player.sprite.score
 
-		# player sprites
+		# player
 		self.player.update()
 		self.horizontal_movement_collision()
 		player = self.player.sprite
 		for coin in pygame.sprite.spritecollide(player, self.coin_sprites, True):
 			player.score += 1
-		
+
 		score_text = self.player.sprite.font.render("Score: " + str(self.player.sprite.score), True, (0, 0, 0))
 		self.display_surface.blit(score_text, (20, 20))
 
 		username_font = pygame.font.Font(None, 36)  
-		username_text = username_font.render("User: " + self.username, True, (0, 0, 0))
+		username_text = username_font.render("User: " + self.username.username, True, (0, 0, 0))
 		self.display_surface.blit(username_text, (20, 60))
 		
 		self.get_player_on_ground()
@@ -258,6 +259,9 @@ class Level:
 
 		# water 
 		self.water.draw(self.display_surface,self.world_shift)
+
+
+
 
 
 
