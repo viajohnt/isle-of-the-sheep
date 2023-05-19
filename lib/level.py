@@ -242,12 +242,13 @@ class Level:
 		for coin in pygame.sprite.spritecollide(player, self.coin_sprites, True):
 			player.score += 1
 
-		score_text = self.player.sprite.font.render("Score: " + str(self.player.sprite.score), True, (0, 0, 0))
-		self.display_surface.blit(score_text, (20, 20))
+		score_font = pygame.font.Font('lib/assets/fonts/Pixeltype.ttf', 72)
+		score_text = score_font.render("Score: " + str(player.score), True, 'Black')
+		self.display_surface.blit(score_text, (1200, 20))
 
-		username_font = pygame.font.Font(None, 36)  
-		username_text = username_font.render("User: " + self.username.username, True, (0, 0, 0))
-		self.display_surface.blit(username_text, (20, 60))
+		username_font = pygame.font.Font('lib/assets/fonts/Pixeltype.ttf', 64)  
+		username_text = username_font.render("Hello, " + self.username.username, True, 'Black')
+		self.display_surface.blit(username_text, (20, 20))
 		self.player.sprite.draw_health_bar(self.display_surface)
 
 		player = self.player.sprite

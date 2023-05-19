@@ -1,28 +1,26 @@
 import pygame
 import sys
 from settings import *
-from models import Player, session  # Import Player and session from models
+from models import Player, session 
 
-def run_title_screen():
+def run_title_screen(screen, clock, font):
     pygame.init()
 
     screen = pygame.display.set_mode((screen_width, screen_height))
-    pygame.display.set_caption("Secret of the Sheep")
+    pygame.display.set_caption("Isle of the Sheep")
 
-    font = pygame.font.Font(None, 36)
-
-    black = (0, 0, 0)
+    grey = (50, 50, 50)
     white = (255, 255, 255)
 
-    input_box_width = 200
-    input_box_height = 40
-    input_box_x = (screen_width - input_box_width) // 2
-    input_box_y = (screen_height - input_box_height) // 2
+    input_box_width = 250
+    input_box_height = 80
+    input_box_x = (screen_width - input_box_width) // 2  
+    input_box_y = (screen_height - input_box_height) // 2 
 
-    button_width = 100
-    button_height = 40
-    button_x = (screen_width - button_width) // 2
-    button_y = (screen_height + input_box_height) // 2 + 20
+    button_width = 140
+    button_height = 80
+    button_x = (screen_width - button_width) // 2 
+    button_y = (screen_height + input_box_height) // 2 + 120
 
     username = ""
     is_typing = False
@@ -52,19 +50,26 @@ def run_title_screen():
                         button_y <= mouse_pos[1] <= button_y + button_height:
                         start_clicked = True
 
-        screen.fill(white)
+        screen.fill(grey)
 
-        #Input box
-        pygame.draw.rect(screen, black, (input_box_x, input_box_y, input_box_width, input_box_height))
+        welcome_text = font.render("Welcome to Isle of the Sheep", True, white)
+        welcome_text_rect = welcome_text.get_rect(center=(screen_width // 2, input_box_y - 210))
+        screen.blit(welcome_text, welcome_text_rect)
+
+        instruction_text = font.render("enter username:", True, white)
+        instruction_text_rect = instruction_text.get_rect(center=(screen_width // 2, input_box_y - 30))
+        screen.blit(instruction_text, instruction_text_rect)
+
+        pygame.draw.rect(screen, white, (input_box_x, input_box_y, input_box_width, input_box_height))
         if is_typing:
             pygame.draw.rect(screen, white, (input_box_x + 2, input_box_y + 2, input_box_width - 4, input_box_height - 4))
-        username_text = font.render(username, True, black) 
-        screen.blit(username_text, (input_box_x + 10, input_box_y + 10))
+        username_text = font.render(username, True, 'black')
+        screen.blit(username_text, (input_box_x + 10, input_box_y + 20))
 
-        #Start button
-        pygame.draw.rect(screen, black, (button_x, button_y, button_width, button_height))
+        pygame.draw.rect(screen, 'green', (button_x, button_y, button_width, button_height))
         start_text = font.render("Start", True, white)
-        screen.blit(start_text, (button_x + 25, button_y + 10))
+        start_text_rect = start_text.get_rect(center=(button_x + button_width // 2, button_y + button_height // 2))
+        screen.blit(start_text, start_text_rect)
 
         pygame.display.flip()
 
@@ -73,6 +78,7 @@ def run_title_screen():
             break
 
     return player
+
 
 def get_player(username):
     player = session.query(Player).filter_by(username=username).first()

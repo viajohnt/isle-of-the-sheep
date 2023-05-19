@@ -130,11 +130,10 @@ class PlayerSprite(pygame.sprite.Sprite):
 	def update_health(self, amount):
 		if self.hit_cooldown <= 0:
 			self.health -= amount
-			self.hit_cooldown = 0.5  # Cooldown period of half a second
+			self.hit_cooldown = 0.5
 
 			if self.health <= 0:
 				self.health = 0
-				# Handle game over logic here if needed
 
 			elif self.health > 100:
 				self.health = 100
@@ -160,14 +159,14 @@ class PlayerSprite(pygame.sprite.Sprite):
 		enemy_rect = enemy.rect
 
 		if self.rect.colliderect(enemy_rect):
-			if self.rect.bottom <= enemy_rect.top:  # Player jumps on enemy's head
+			if self.rect.bottom <= enemy_rect.top:  
 				self.rect.bottom = enemy_rect.top
-				self.velocity.y = -12  # Adjust the player's vertical velocity to simulate a jump
-				return True  # Return True to indicate successful collision
+				self.velocity.y = -12 
+				return True  
 
-			self.update_health(20)  # Apply damage
+			self.update_health(20)  
 
-		return False  # Return False for other types of collision
+		return False 
 			
 	def update(self):
 		self.get_input()

@@ -2,7 +2,7 @@ import pygame
 import sys
 from settings import *
 from level import Level
-from game_data import level1_1
+from game_data import level1_1, level1_2  
 import titlescreen
 import gameover
 from models import session, Score, Player, Attempts
@@ -21,7 +21,7 @@ def save_attempts(attempts_count, username):
     if player:
         attempts_entry = Attempts(count=attempts_count, player_id=player.id)
         session.add(attempts_entry)
-        session.commit()  # Commit the session after adding the attempts entry
+        session.commit() 
     else:
         print(f"Player with username '{username}' not found.")
 
@@ -29,11 +29,20 @@ def save_attempts(attempts_count, username):
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
-username = titlescreen.run_title_screen()
-level = Level(level1_1, screen, username=username)
+
+# Load the custom font
+font_path = "lib/assets/fonts/Pixeltype.ttf"
+font_size = 72
+font = pygame.font.Font(font_path, font_size)
+
+username = titlescreen.run_title_screen(screen, clock, font) 
+level_data = [level1_1, level1_2]  
+current_level_index = 0
+level = Level(level_data[current_level_index], screen, username=username)
 game_over = False
 restart_game = False
-attempts = 0  # Initialize attempts counter to 0
+attempts = 0  
+cumulative_score = 0  
 
 while True:
     for event in pygame.event.get():
@@ -45,35 +54,50 @@ while True:
         level.run()
 
         if level.player.sprite.rect.bottom > screen_height:  # Check if player falls below the map
-            save_score(level.player.sprite.score, username.username)
-            attempts += 1  # Increment attempts counter
+            save_score(level.player.sprite.score + cumulative_score, username.username)  
+            attempts += 1  
             save_attempts(attempts, username.username)
             game_over = True
 
         if level.player.sprite.health <= 0:  # Check if player's health reaches 0 or below
-            save_score(level.player.sprite.score, username.username)
-            attempts += 1  # Increment attempts counter
+            save_score(level.player.sprite.score + cumulative_score, username.username) 
+            attempts += 1  
             save_attempts(attempts, username.username)
             game_over = True
 
         if pygame.sprite.spritecollide(level.player.sprite, level.goal, False):  # Check if player touches the hat
-            save_score(level.player.sprite.score, username.username)
-            attempts += 1  # Increment attempts counter
-            save_attempts(attempts, username.username)
-            game_over = True
+            cumulative_score += level.player.sprite.score 
+            save_score(level.player.sprite.score + cumulative_score, username.username)  
+            attempts += 1  
+            if current_level_index < len(level_data) - 1:  # Check if there is another level
+                current_level_index += 1 
+                level = Level(level_data[current_level_index], screen, username=username)
+                level.player.sprite.score = cumulative_score  
+                game_over = False
+            else:
+                current_level_index = 0  
+                game_over = True
+                
 
     else:
-        if gameover.show_game_over_screen(screen, clock, level.player.sprite.score):
-            level = Level(level1_1, screen, username=username)
+        if gameover.show_game_over_screen(screen, clock, level.player.sprite.score + cumulative_score, font):  
+            current_level_index = 0 
+            cumulative_score = 0 
+            level = Level(level_data[current_level_index], screen, username=username)
             game_over = False
             restart_game = True
-            attempts = 0  # Reset attempts counter
+            attempts = 0  
         else:
             break
-        
+
     if restart_game:
+        current_level_index = 0  
+        cumulative_score = 0  
+        level = Level(level_data[current_level_index], screen, username=username)
+        level.player.sprite.score = cumulative_score 
+        game_over = False
         restart_game = False
-        continue
+        attempts = 0  
 
     pygame.display.update()
     clock.tick(60)
